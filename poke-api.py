@@ -43,7 +43,6 @@ class PokeList(Resource):
                     image = poke_data['sprites']['front_default']
                 ))
             
-            print(target_uri)
             final_response = dict(  total=poke_response['count'],
                                     limit=query_params['limit'],
                                     offset=query_params['offset'],
