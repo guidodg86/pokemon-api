@@ -1,3 +1,4 @@
+from json.decoder import JSONDecodeError
 from flask import Flask
 from flask_restful import request ,Resource, Api
 import requests
@@ -80,10 +81,46 @@ class PokeList(Resource):
             return final_response
         
 
+class Pokedetail(Resource):
+    def get(self, poke_id):
+        try:
+            poke_response = requests.get(POKE_API_URI_LIST + poke_id ).json()
+        except JSONDecodeError:
+            return {"error": "Pokemon not found in database"}
+        abilities = [ability['ability']['name'] for ability in poke_response['abilities']]
+        base_experience = poke_response['base_experience']
+        forms = [form['name'] for form in  poke_response['forms']]
+        height = poke_response['height']
+        id = poke_response['id']
+        location_area_encounters = poke_response['location_area_encounters']
+        moves = [move['move']['name'] for move in  poke_response['moves']] 
+        name = poke_response['name']
+        order = poke_response['order']    
+        species = poke_response['species']['name']       
+        sprites = [poke_response['sprites'][sprite] for sprite in  poke_response['sprites'] if poke_response['sprites'][sprite] != None and sprite != "other" and sprite != "versions"] 
+        stats = { stat['stat']['name']  : stat['base_stat'] for stat in poke_response['stats'] }
+        types = [type_of_poke['type']['name']  for type_of_poke in  poke_response['types']]
+        weight = poke_response['weight']
 
+        final_response = dict(  
+            abilities = abilities,
+            base_experience = base_experience,
+            forms = forms,
+            height = height,
+            id = id,
+            location_area_encounters = location_area_encounters,
+            moves = moves,
+            name = name, 
+            order = order,
+            species = species,
+            sprites = sprites,
+            stats = stats,
+            types = types,
+            weight = weight
+        )
+        return final_response
 
-
-
+api.add_resource(Pokedetail, '/<string:poke_id>')
 api.add_resource(PokeList, '/')
 
 if __name__ == '__main__':
