@@ -28,8 +28,27 @@ class PokeList(Resource):
             target_uri = POKE_API_URI_LIST
 
         if name_to_search == None:
-            poke_response = requests.get(target_uri)
-            return poke_response.json()
+            poke_response = requests.get(target_uri).json()
+
+            poke_list_result = []
+            poke_list_received = poke_response['results']
+            for pokemon in poke_list_received:
+                pokemon_url = pokemon['url']
+                pokemon_id = pokemon_url.split("pokemon/")[1][:-1]
+                pokemon_name = pokemon['name']
+                poke_data = requests.get(pokemon_url).json()
+                poke_list_result.append(dict(
+                    id = pokemon_id,
+                    name = pokemon_name,
+                    image = poke_data['sprites']['front_default']
+                ))
+            
+            print(target_uri)
+            final_response = dict(  total=poke_response['count'],
+                                    limit=query_params['limit'],
+                                    offset=query_params['offset'],
+                                    data =  poke_list_result )
+            return final_response
 
 
 
