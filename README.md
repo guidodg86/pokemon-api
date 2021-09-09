@@ -72,7 +72,7 @@ Using PokeApi (https://pokeapi.co/) develop the following endpoints:
 }
 ```
 
-## Requeriments
+## Requeriments - Flask
 aniso8601==9.0.1  
 certifi==2021.5.30  
 charset-normalizer==2.0.4  
@@ -89,7 +89,7 @@ six==1.16.0
 urllib3==1.26.6  
 Werkzeug==2.0.1  
 
-## How to use?
+## How to use? - Flask
 From linux bash. Also can be run from REPL
 ```
 python poke-api.py
