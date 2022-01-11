@@ -97,17 +97,17 @@ python poke-api.py
 After that you can start making api get request to 127.0.0.1:5000
 
 ## Requeriments - Django
-asgiref==3.4.1
-certifi==2021.10.8
-charset-normalizer==2.0.10
-Django==3.2.7
-djangorestframework==3.12.4
-idna==3.3
-python-decouple==3.5
-pytz==2021.1
-requests==2.27.1
-sqlparse==0.4.1
-urllib3==1.26.8
+asgiref==3.4.1   
+certifi==2021.10.8   
+charset-normalizer==2.0.10   
+Django==3.2.7   
+djangorestframework==3.12.4   
+idna==3.3   
+python-decouple==3.5   
+pytz==2021.1   
+requests==2.27.1   
+sqlparse==0.4.1   
+urllib3==1.26.8   
 
 ## How to use? - Django
 From linux bash
