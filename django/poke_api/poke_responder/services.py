@@ -1,6 +1,6 @@
 import requests
 import json
 
-def ConsumePokeData():
-    poke_response = requests.get('https://pokeapi.co/api/v2/pokemon/20/')
+def ConsumePokeData(uri):
+    poke_response = requests.get(uri)
     return json.loads(poke_response.text)
