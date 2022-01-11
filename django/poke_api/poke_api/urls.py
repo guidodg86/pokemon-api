@@ -15,8 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from poke_responder.views import GetPokeList
+from poke_responder.views import GetPokeList, GetPokeDetail
 
 urlpatterns = [
     path('', GetPokeList.as_view()),
+    path('<str:poke_id>', GetPokeDetail.as_view())
 ]

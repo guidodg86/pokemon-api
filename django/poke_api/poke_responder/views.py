@@ -1,3 +1,4 @@
+from json.decoder import JSONDecodeError
 from django.shortcuts import render
 from rest_framework.views import APIView
 from poke_responder.services import ConsumePokeData
@@ -77,3 +78,45 @@ class GetPokeList(APIView):
                                         offset=query_params['offset'],
                                         data =  poke_list_result[first_req_element:last_req_element] )
                 return Response(final_response)
+
+
+class GetPokeDetail(APIView):
+
+    def get(self, request, poke_id):
+        if request.method == 'GET':
+            try:
+                poke_response = ConsumePokeData(POKE_API_URI_LIST + poke_id )
+            except JSONDecodeError:
+                return Response({"error": "Pokemon not found in database"})        
+            abilities = [ability['ability']['name'] for ability in poke_response['abilities']]
+            base_experience = poke_response['base_experience']
+            forms = [form['name'] for form in  poke_response['forms']]
+            height = poke_response['height']
+            id = poke_response['id']
+            location_area_encounters = poke_response['location_area_encounters']
+            moves = [move['move']['name'] for move in  poke_response['moves']] 
+            name = poke_response['name']
+            order = poke_response['order']    
+            species = poke_response['species']['name']       
+            sprites = [poke_response['sprites'][sprite] for sprite in  poke_response['sprites'] if poke_response['sprites'][sprite] != None and sprite != "other" and sprite != "versions"] 
+            stats = { stat['stat']['name']  : stat['base_stat'] for stat in poke_response['stats'] }
+            types = [type_of_poke['type']['name']  for type_of_poke in  poke_response['types']]
+            weight = poke_response['weight']
+
+            final_response = dict(  
+                abilities = abilities,
+                base_experience = base_experience,
+                forms = forms,
+                height = height,
+                id = id,
+                location_area_encounters = location_area_encounters,
+                moves = moves,
+                name = name, 
+                order = order,
+                species = species,
+                sprites = sprites,
+                stats = stats,
+                types = types,
+                weight = weight
+            )
+            return Response(final_response)
