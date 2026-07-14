@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 
 # go debug
-__debug_bin*
+poke-api-go/__debug_bin
+__debug_bin
