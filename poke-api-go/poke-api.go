@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 const pokeApiUrl = "https://pokeapi.co/api/v2/pokemon/"
@@ -25,12 +24,12 @@ type pokeData struct {
 
 func main() {
 	var listFinished bool = false
-	var offset int = 0
-	var targetUrl string
-	var apiResponse pokeApiList
+	var targetUrl string = pokeApiUrl + "?limit=500"
+	var listPokes []pokeData
 
 	for !listFinished {
-		targetUrl = pokeApiUrl + "?offset=" + strconv.Itoa(offset)
+		var apiResponse pokeApiList
+		fmt.Printf("poke-server: fetching from %s\n", targetUrl)
 		res, err := http.Get(targetUrl)
 		if err != nil {
 			fmt.Printf("poke-server: error making http request: %s\n", err)
@@ -43,13 +42,22 @@ func main() {
 			fmt.Printf("poke-server: could not read response body: %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("poke-server: response body: %s\n", resBody)
 		err = json.Unmarshal([]byte(resBody), &apiResponse)
 		if err != nil {
 			fmt.Printf("poke-server: could not parse json data: %s\n", err)
 			os.Exit(1)
 		}
-	}
 
-	fmt.Printf("test")
+		for _, v := range apiResponse.Results {
+			listPokes = append(listPokes, v)
+		}
+
+		if apiResponse.Next == "" {
+			listFinished = true
+		} else {
+			targetUrl = apiResponse.Next
+		}
+	}
+	fmt.Printf("poke-server: full pokemon list fetched from server\n")
+
 }
