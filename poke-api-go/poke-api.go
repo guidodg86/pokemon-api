@@ -12,15 +12,15 @@ import (
 const pokeApiUrl = "https://pokeapi.co/api/v2/pokemon/"
 
 type pokeApiList struct {
-	count    int
-	next     string
-	previous string
-	results  []pokeData
+	Count    int
+	Next     string
+	Previous string
+	Results  []pokeData
 }
 
 type pokeData struct {
-	name string
-	url  string
+	Name string
+	Url  string
 }
 
 func main() {
@@ -51,4 +51,5 @@ func main() {
 		}
 	}
 
+	fmt.Printf("test")
 }
