@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/gin-gonic/gin"
 )
 
 const pokeApiUrl = "https://pokeapi.co/api/v2/pokemon/"
@@ -23,6 +25,13 @@ type pokeData struct {
 }
 
 func main() {
+	router := gin.Default()
+	router.GET("/", getPokes)
+
+	router.Run("localhost:8080")
+}
+
+func getPokes(c *gin.Context) {
 	var listFinished bool = false
 	var targetUrl string = pokeApiUrl + "?limit=500"
 	var listPokes []pokeData
@@ -59,5 +68,6 @@ func main() {
 		}
 	}
 	fmt.Printf("poke-server: full pokemon list fetched from server\n")
+	c.IndentedJSON(http.StatusOK, listPokes)
 
 }
