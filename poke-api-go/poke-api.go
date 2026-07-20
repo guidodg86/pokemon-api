@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,15 +28,24 @@ type pokeData struct {
 func main() {
 	router := gin.Default()
 	router.GET("/", getPokes)
-
 	router.Run("localhost:8080")
 }
 
 func getPokes(c *gin.Context) {
 	var listFinished bool = false
-	var targetUrl string = pokeApiUrl + "?limit=500"
+	var targetUrl string = pokeApiUrl
 	var listPokes []pokeData
+	limitStr := c.DefaultQuery("limit", "200")
+	offset := c.DefaultQuery("offset", "0")
 
+	limitInt, e1 := strconv.Atoi(limitStr)
+	if e1 != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid request"})
+		return
+	}
+	targetUrl = targetUrl + "?offset=" + offset
+	var countPokes int
 	for !listFinished {
 		var apiResponse pokeApiList
 		fmt.Printf("poke-server: fetching from %s\n", targetUrl)
@@ -59,9 +69,10 @@ func getPokes(c *gin.Context) {
 
 		for _, v := range apiResponse.Results {
 			listPokes = append(listPokes, v)
+			countPokes++
 		}
 
-		if apiResponse.Next == "" {
+		if apiResponse.Next == "" || countPokes > limitInt {
 			listFinished = true
 		} else {
 			targetUrl = apiResponse.Next
