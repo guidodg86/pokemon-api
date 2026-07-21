@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
 const pokeApiUrl = "https://pokeapi.co/api/v2/pokemon/"
+const pokeSpriteUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
 
 type pokeApiList struct {
 	Count    int
@@ -25,6 +27,19 @@ type pokeData struct {
 	Url  string
 }
 
+type pokeResult struct {
+	Id    string `json:"id"`
+	Name  string `json:"name"`
+	Image string `json:"image"`
+}
+
+type fullPokeResult struct {
+	Total  int          `json:"total"`
+	Limit  int          `json:"limit"`
+	Offset int          `json:"offset"`
+	Data   []pokeResult `json:"data"`
+}
+
 func main() {
 	router := gin.Default()
 	router.GET("/", getPokes)
@@ -34,8 +49,8 @@ func main() {
 func getPokes(c *gin.Context) {
 	var listFinished bool = false
 	var targetUrl string = pokeApiUrl
-	var listPokes []pokeData
-	limitStr := c.DefaultQuery("limit", "200")
+	var result fullPokeResult
+	limitStr := c.DefaultQuery("limit", "20")
 	offset := c.DefaultQuery("offset", "0")
 
 	limitInt, e1 := strconv.Atoi(limitStr)
@@ -48,6 +63,7 @@ func getPokes(c *gin.Context) {
 	var countPokes int
 	for !listFinished {
 		var apiResponse pokeApiList
+		var pokeDraft pokeResult
 		fmt.Printf("poke-server: fetching from %s\n", targetUrl)
 		res, err := http.Get(targetUrl)
 		if err != nil {
@@ -68,17 +84,25 @@ func getPokes(c *gin.Context) {
 		}
 
 		for _, v := range apiResponse.Results {
-			listPokes = append(listPokes, v)
+			vSplit := strings.Split(v.Url, "/")
+			id := vSplit[len(vSplit)-2]
+			pokeDraft.Id = id
+			pokeDraft.Image = pokeSpriteUrl + string(id) + ".png"
+			pokeDraft.Name = v.Name
+			result.Data = append(result.Data, pokeDraft)
 			countPokes++
+			if countPokes == limitInt {
+				break
+			}
 		}
 
-		if apiResponse.Next == "" || countPokes > limitInt {
+		if apiResponse.Next == "" || countPokes == limitInt {
 			listFinished = true
 		} else {
 			targetUrl = apiResponse.Next
 		}
 	}
 	fmt.Printf("poke-server: full pokemon list fetched from server\n")
-	c.IndentedJSON(http.StatusOK, listPokes)
+	c.IndentedJSON(http.StatusOK, result)
 
 }
