@@ -50,8 +50,13 @@ func getPokes(c *gin.Context) {
 	var listFinished bool = false
 	var targetUrl string = pokeApiUrl
 	var result fullPokeResult
+	var countPokes int
+	var pokeDraft pokeResult
+	var apiResponse pokeApiList
+
 	limitStr := c.DefaultQuery("limit", "20")
-	offset := c.DefaultQuery("offset", "0")
+	offsetStr := c.DefaultQuery("offset", "0")
+	qName := c.DefaultQuery("q", "")
 
 	limitInt, e1 := strconv.Atoi(limitStr)
 	if e1 != nil {
@@ -59,11 +64,18 @@ func getPokes(c *gin.Context) {
 			"message": "Invalid request"})
 		return
 	}
-	targetUrl = targetUrl + "?offset=" + offset
-	var countPokes int
+	offsetInt, e1 := strconv.Atoi(offsetStr)
+	if e1 != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid request"})
+		return
+	}
+
+	result.Limit = limitInt
+	result.Offset = offsetInt
+	targetUrl = targetUrl + "?offset=" + offsetStr
+
 	for !listFinished {
-		var apiResponse pokeApiList
-		var pokeDraft pokeResult
 		fmt.Printf("poke-server: fetching from %s\n", targetUrl)
 		res, err := http.Get(targetUrl)
 		if err != nil {
@@ -89,6 +101,11 @@ func getPokes(c *gin.Context) {
 			pokeDraft.Id = id
 			pokeDraft.Image = pokeSpriteUrl + string(id) + ".png"
 			pokeDraft.Name = v.Name
+			if qName != "" {
+				if !strings.Contains(v.Name, qName) {
+					continue
+				}
+			}
 			result.Data = append(result.Data, pokeDraft)
 			countPokes++
 			if countPokes == limitInt {
@@ -102,6 +119,7 @@ func getPokes(c *gin.Context) {
 			targetUrl = apiResponse.Next
 		}
 	}
+	result.Total = apiResponse.Count
 	fmt.Printf("poke-server: full pokemon list fetched from server\n")
 	c.IndentedJSON(http.StatusOK, result)
 
